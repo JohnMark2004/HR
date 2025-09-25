@@ -1,0 +1,5 @@
+# Ignore lockfile
+package-lock.json
+
+# Ignore environment variables
+.env

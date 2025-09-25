@@ -194,5 +194,9 @@ app.get("/reports/attendance", authenticate, async (req, res) => {
 });
 
 // Start
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server http://localhost:${PORT}`));
+const PORT = process.env.PORT || 10000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
