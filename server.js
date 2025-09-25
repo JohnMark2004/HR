@@ -193,10 +193,15 @@ app.get("/reports/attendance", authenticate, async (req, res) => {
   res.json({ timeins: await TimeIn.find().sort({ timestamp: -1 }), timeouts: await TimeOut.find().sort({ timestamp: -1 }) });
 });
 
+app.get('/', (req, res) => {
+  res.send('Server is running!');
+});
+
+
 // Start
 const PORT = process.env.PORT || 10000;
-
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
 
