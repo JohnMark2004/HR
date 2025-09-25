@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HR Management System</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Auth -->
+  <div id="authBox" class="container">
+    <h2 id="formTitle">Login</h2>
+
+    <div id="loginForm">
+      <input id="loginEmail" type="email" placeholder="Email" />
+      <input id="loginPassword" type="password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="signupForm" style="display:none;">
+      <input id="signupName" type="text" placeholder="Full Name" />
+      <input id="signupEmail" type="email" placeholder="Email" />
+      <input id="signupPassword" type="password" placeholder="Password" />
+      <select id="signupRole">
+        <option value="Employee">Employee</option>
+        <option value="HR">HR</option>
+      </select>
+      <button onclick="signup()">Signup</button>
+    </div>
+
+    <p id="toggleText">Don't have an account? <a href="#" onclick="showSignup()">Signup</a></p>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="dashboard" style="display:none;">
+    <aside class="sidebar">
+      <h2>HR System</h2>
+      <p>Welcome, <strong><span id="userName"></span></strong></p>
+      <p><small>Role: <span id="userRole"></span></small></p>
+      <ul>
+        <li><button onclick="showSection('profileSection')">👤 Profile</button></li>
+        <li><button onclick="showSection('attendanceSection')">🕒 Work Time</button></li>
+        <li id="leaveMenu"><button onclick="showSection('leaveSection')">📝 Leave</button></li>
+        <li><button onclick="showSection('payslipSection')">💰 Payslips</button></li>
+        <li id="hrMenu" style="display:none;"><button onclick="showSection('hrSection')">👥 Employees</button></li>
+        <li id="payrollMenu" style="display:none;"><button onclick="showSection('payrollSection')">💵 Payroll</button></li>
+        <li id="reportsMenu" style="display:none;"><button onclick="showSection('reportsSection')">📊 Reports</button></li>
+        <li><button onclick="logout()">🚪 Logout</button></li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <!-- Profile -->
+      <section id="profileSection" class="section">
+        <h3>Profile</h3>
+        <input id="profileName" type="text" placeholder="Your name" />
+        <button onclick="updateProfile()">Update Profile</button>
+      </section>
+
+      <!-- Attendance -->
+      <section id="attendanceSection" class="section hidden">
+        <h3>Work Time</h3>
+        <div style="display:flex; gap:12px; max-width:420px;">
+          <button onclick="markTimeIn()">Time In</button>
+          <button onclick="markTimeOut()">Time Out</button>
+        </div>
+        <h4 style="margin-top:18px;">Time In Records</h4>
+        <div id="timeInRecords"></div>
+        <h4>Time Out Records</h4>
+        <div id="timeOutRecords"></div>
+      </section>
+
+      <!-- Leave (employees only) -->
+      <section id="leaveSection" class="section hidden">
+        <h3>Leave Request</h3>
+        <input id="leaveReason" type="text" placeholder="Reason" />
+        <input id="leaveFrom" type="date" />
+        <input id="leaveTo" type="date" />
+        <button onclick="submitLeave()">Submit Leave</button>
+        <div id="leaveRecords" style="margin-top:12px;"></div>
+      </section>
+
+      <!-- Payslips (employee view) -->
+      <section id="payslipSection" class="section hidden">
+        <h3>Payslips</h3>
+        <button onclick="viewPayslips()">View Payslips</button>
+        <div id="payslipContainer" style="margin-top:12px;"></div>
+      </section>
+
+      <!-- HR: Employees -->
+      <section id="hrSection" class="section hidden">
+        <h3>Employee Management</h3>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+          <input id="empName" type="text" placeholder="Name" style="flex:1; min-width:200px;" />
+          <input id="empEmail" type="email" placeholder="Email" style="flex:1; min-width:200px;" />
+          <input id="empPassword" type="password" placeholder="Password" style="flex:1; min-width:200px;" />
+          <input id="empDepartment" type="text" placeholder="Department (e.g. Math Dept)" style="flex:1; min-width:200px;" />
+          <button onclick="addEmployee()">Add Employee</button>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; background:#fff;">
+          <thead><tr style="text-align:left;"><th>Name</th><th>Email</th><th>Department</th><th>Actions</th></tr></thead>
+          <tbody id="employeeTableBody"></tbody>
+        </table>
+
+        <div id="editEmployeeForm" style="display:none; margin-top:12px;">
+          <h4>Edit Employee</h4>
+          <input id="editEmpId" type="hidden" />
+          <input id="editEmpName" type="text" placeholder="Name" />
+          <input id="editEmpEmail" type="email" placeholder="Email" />
+          <input id="editEmpDepartment" type="text" placeholder="Department" />
+          <button onclick="updateEmployee()">Save</button>
+        </div>
+      </section>
+
+      <!-- HR: Payroll -->
+      <section id="payrollSection" class="section hidden">
+        <h3>Payroll Management (Philippines)</h3>
+
+        <div style="max-width:720px;">
+          <label>Employee</label>
+          <select id="payrollEmpId"></select>
+
+          <label>Month (e.g. September 2025)</label>
+          <input id="payrollMonth" type="text" />
+
+          <label>Basic Salary</label><input id="payrollBasic" type="number" />
+
+          <label>Overtime Pay</label><input id="payrollOvertime" type="number" value="0" />
+          <label>Allowances</label><input id="payrollAllowances" type="number" value="0" />
+
+          <h4>Deductions</h4>
+          <label>SSS</label><input id="payrollSSS" type="number" value="0" />
+          <label>PhilHealth</label><input id="payrollPhilHealth" type="number" value="0" />
+          <label>Pag-IBIG</label><input id="payrollPagibig" type="number" value="0" />
+          <label>Tax</label><input id="payrollTax" type="number" value="0" />
+
+          <div style="margin-top:12px;">
+            <button onclick="generatePayslip()">Generate Payslip</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- HR: Reports -->
+      <section id="reportsSection" class="section hidden">
+        <h3>Attendance Reports</h3>
+        <button onclick="viewReports()">Refresh Reports</button>
+        <table style="width:100%; margin-top:12px;">
+          <thead><tr><th>Name</th><th>Email</th><th>Type</th><th>Timestamp</th></tr></thead>
+          <tbody id="reportTableBody"></tbody>
+        </table>
+      </section>
+
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
