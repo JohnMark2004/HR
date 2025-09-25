@@ -1,5 +1,5 @@
 // script.js
-const API_URL = "http://localhost:5000";
+const API_URL = "https://hr-1-ck3i.onrender.com";
 
 // ---------- Auth ----------
 async function signup() {
