@@ -196,13 +196,12 @@ app.get("/reports/attendance", authenticate, async (req, res) => {
 const path = require('path');
 
 // Serve frontend build
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Send index.html for any route not handled by API
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
 
 
 // Start
