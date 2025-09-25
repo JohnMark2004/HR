@@ -193,8 +193,14 @@ app.get("/reports/attendance", authenticate, async (req, res) => {
   res.json({ timeins: await TimeIn.find().sort({ timestamp: -1 }), timeouts: await TimeOut.find().sort({ timestamp: -1 }) });
 });
 
-app.get('/', (req, res) => {
-  res.send('Server is running!');
+const path = require('path');
+
+// Serve frontend build
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// Send index.html for any route not handled by API
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
 
