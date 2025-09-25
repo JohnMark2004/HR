@@ -199,9 +199,10 @@ const path = require('path');
 app.use(express.static(path.join(__dirname, 'client/build')));
 
 // Send index.html for any route not handled by API
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
+
 
 
 // Start
