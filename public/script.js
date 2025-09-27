@@ -14,19 +14,25 @@ async function signup() {
   const name = document.getElementById("signupName")?.value.trim() || "";
   const email = document.getElementById("signupEmail")?.value.trim() || "";
   const password = document.getElementById("signupPassword")?.value || "";
+  const confirmPassword = document.getElementById("signupConfirmPassword")?.value || "";
   const role = document.getElementById("signupRole")?.value || "";
   const accessCodeInput = document.getElementById("signupHrAccessCode");
   const accessCode = accessCodeInput ? accessCodeInput.value.trim() : "";
 
   if (role === "HR") {
     if (accessCode !== "12345") {
-    showToast("Invalid HR Access Code.", "error");
-    return;
+      showToast("Invalid HR Access Code.", "error");
+      return;
     }
   }
 
-  if (!name || !email || !password) {
+  if (!name || !email || !password || !confirmPassword) {
     showToast("Please fill out all required fields.", "error");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showToast("Passwords do not match.", "error");
     return;
   }
 
@@ -45,12 +51,13 @@ async function signup() {
     }
 
     showToast("Signup successful! You can now log in.", "success");
-    showLogin(); // Switch user back to login after success
+    showLogin();
   } catch (err) {
     console.error("Signup Error:", err);
     showToast("An error occurred during signup.", "error");
   }
 }
+
 
 
 async function login() {
