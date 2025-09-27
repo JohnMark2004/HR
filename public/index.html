@@ -6,30 +6,57 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Auth -->
-  <div id="authBox" class="container">
-    <h2 id="formTitle">Login</h2>
-
-    <div id="loginForm">
-      <input id="loginEmail" type="email" placeholder="Email" />
-      <input id="loginPassword" type="password" placeholder="Password" />
-      <button onclick="login()">Login</button>
-    </div>
-
-    <div id="signupForm" style="display:none;">
-      <input id="signupName" type="text" placeholder="Full Name" />
-      <input id="signupEmail" type="email" placeholder="Email" />
-      <input id="signupPassword" type="password" placeholder="Password" />
-      <select id="signupRole">
-        <option value="Employee">Employee</option>
-        <option value="HR">HR</option>
-      </select>
-      <button onclick="signup()">Signup</button>
-    </div>
-
-    <p id="toggleText">Don't have an account? <a href="#" onclick="showSignup()">Signup</a></p>
+<!-- Auth Portal -->
+<div id="authBox" class="container portal-auth">
+  <div class="portal-header">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Perpetual_Help_System_DALTA_seal.png" alt="Portal Logo" class="portal-logo" />
+    <h1 class="portal-title">Portal</h1>
+    <p class="portal-desc">Welcome! Please login or sign up to continue.</p>
   </div>
 
+  <div class="portal-tabs">
+    <button id="loginTab" class="active" onclick="showLogin()">Login</button>
+    <button id="signupTab" onclick="showSignup()">Signup</button>
+  </div>
+
+  <!-- Login Form -->
+  <div id="loginForm" class="portal-form">
+    <h2>Login</h2>
+    <label for="loginEmail">Email</label>
+    <input id="loginEmail" type="email" placeholder="Email" required />
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" type="password" placeholder="Password" required />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- Signup Form -->
+  <div id="signupForm" class="portal-form" style="display:none;">
+    <h2>Signup</h2>
+    <label for="signupName">Full Name</label>
+    <input id="signupName" type="text" placeholder="Enter your full name" />
+    <label for="signupEmail">Email</label>
+    <input id="signupEmail" type="email" placeholder="Enter your email" />
+    <label for="signupPassword">Password</label>
+    <input id="signupPassword" type="password" placeholder="Create a password" />
+    <label for="signupRole">Role</label>
+    <select id="signupRole" onchange="toggleSignupHrAccess()">
+      <option value="Employee">Employee</option>
+      <option value="HR">HR</option>
+    </select>
+
+    <!-- HR Access Code field, shown only if role = HR -->
+    <div id="signupHrAccessDiv" style="display:none;">
+      <label for="signupHrAccessCode">HR Access Code</label>
+      <input id="signupHrAccessCode" type="password" placeholder="HR Access Code" />
+    </div>
+
+    <button onclick="signup()">Signup</button>
+  </div>
+
+  <div class="portal-footer">
+    <p id="toggleText">Don't have an account? <a href="#" onclick="showSignup()">Signup</a></p>
+  </div>
+</div>
   <!-- Dashboard -->
   <div id="dashboard" class="dashboard" style="display:none;">
     <aside class="sidebar">
@@ -37,14 +64,14 @@
       <p>Welcome, <strong><span id="userName"></span></strong></p>
       <p><small>Role: <span id="userRole"></span></small></p>
       <ul>
-        <li><button onclick="showSection('profileSection')">👤 Profile</button></li>
-        <li><button onclick="showSection('attendanceSection')">🕒 Work Time</button></li>
-        <li id="leaveMenu"><button onclick="showSection('leaveSection')">📝 Leave</button></li>
-        <li><button onclick="showSection('payslipSection')">💰 Payslips</button></li>
-        <li id="hrMenu" style="display:none;"><button onclick="showSection('hrSection')">👥 Employees</button></li>
-        <li id="payrollMenu" style="display:none;"><button onclick="showSection('payrollSection')">💵 Payroll</button></li>
-        <li id="reportsMenu" style="display:none;"><button onclick="showSection('reportsSection')">📊 Reports</button></li>
-        <li><button onclick="logout()">🚪 Logout</button></li>
+        <li><button onclick="showSection('profileSection')">Profile</button></li>
+        <li><button onclick="showSection('attendanceSection')">Work Time</button></li>
+        <li id="leaveMenu"><button onclick="showSection('leaveSection')">Leave</button></li>
+        <li><button onclick="showSection('payslipSection')">Payslips</button></li>
+        <li id="hrMenu" style="display:none;"><button onclick="showSection('hrSection')">Employees</button></li>
+        <li id="payrollMenu" style="display:none;"><button onclick="showSection('payrollSection')"> Payroll</button></li>
+        <li id="reportsMenu" style="display:none;"><button onclick="showSection('reportsSection')"> Reports</button></li>
+        <li><button onclick="logout()">Logout</button></li>
       </ul>
     </aside>
 

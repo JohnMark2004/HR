@@ -2,11 +2,33 @@
 const API_URL = "https://hr-1-ck3i.onrender.com";
 
 // ---------- Auth ----------
-async function signup() {
-  const name = document.getElementById("signupName").value.trim();
-  const email = document.getElementById("signupEmail").value.trim();
-  const password = document.getElementById("signupPassword").value;
+
+function toggleSignupHrAccess() {
   const role = document.getElementById("signupRole").value;
+  document.getElementById("signupHrAccessDiv").style.display =
+    role === "HR" ? "block" : "none";
+}
+
+
+async function signup() {
+  const name = document.getElementById("signupName")?.value.trim() || "";
+  const email = document.getElementById("signupEmail")?.value.trim() || "";
+  const password = document.getElementById("signupPassword")?.value || "";
+  const role = document.getElementById("signupRole")?.value || "";
+  const accessCodeInput = document.getElementById("signupHrAccessCode");
+  const accessCode = accessCodeInput ? accessCodeInput.value.trim() : "";
+
+  if (role === "HR") {
+    if (accessCode !== "12345") {
+    showToast("Invalid HR Access Code.", "error");
+    return;
+    }
+  }
+
+  if (!name || !email || !password) {
+    showToast("Please fill out all required fields.", "error");
+    return;
+  }
 
   try {
     const res = await fetch(`${API_URL}/signup`, {
@@ -14,40 +36,47 @@ async function signup() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, role })
     });
+
     const data = await res.json();
-    if (res.ok) {
-      alert("Signup successful — please login.");
-      showLogin();
-    } else {
-      alert(data.message || "Signup failed");
+
+    if (!res.ok) {
+      showToast(data.message || "Signup failed.", "error");
+      return;
     }
+
+    showToast("Signup successful! You can now log in.", "success");
+    showLogin(); // Switch user back to login after success
   } catch (err) {
-    alert("Network error: " + err.message);
+    console.error("Signup Error:", err);
+    showToast("An error occurred during signup.", "error");
   }
 }
+
 
 async function login() {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
   try {
-    const res = await fetch(`${API_URL}/login`, {
+    const response = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
-    if (res.ok) {
+    const data = await response.json();
+    if (response.ok) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("currentUser", JSON.stringify({ name: data.name, role: data.role }));
+      showToast(`Welcome, ${data.name}! Login successful.`, "success");
       showDashboard();
     } else {
-      alert(data.message || "Login failed");
+      showToast(data.message || "Login failed", "error");
     }
   } catch (err) {
-    alert("Network error: " + err.message);
+    showToast("Network error: " + err.message, "error");
   }
 }
+
 
 function logout() {
   localStorage.removeItem("token");
@@ -58,18 +87,22 @@ function logout() {
 }
 
 // ---------- UI helpers ----------
+// ...existing code...
 function showSignup() {
   document.getElementById("signupForm").style.display = "block";
   document.getElementById("loginForm").style.display = "none";
-  document.getElementById("formTitle").innerText = "Signup";
+  document.getElementById("signupTab").classList.add("active");
+  document.getElementById("loginTab").classList.remove("active");
   document.getElementById("toggleText").innerHTML = 'Already have an account? <a href="#" onclick="showLogin()">Login</a>';
 }
 function showLogin() {
   document.getElementById("signupForm").style.display = "none";
   document.getElementById("loginForm").style.display = "block";
-  document.getElementById("formTitle").innerText = "Login";
+  document.getElementById("loginTab").classList.add("active");
+  document.getElementById("signupTab").classList.remove("active");
   document.getElementById("toggleText").innerHTML = 'Don\'t have an account? <a href="#" onclick="showSignup()">Signup</a>';
 }
+// ...existing code...
 
 // ---------- Dashboard ----------
 function showDashboard() {
@@ -136,14 +169,15 @@ async function updateProfile() {
     });
     const data = await res.json();
     if (res.ok) {
-      alert(data.message);
+      showToast(data.message, "success");
       const user = JSON.parse(localStorage.getItem("currentUser"));
       user.name = name;
       localStorage.setItem("currentUser", JSON.stringify(user));
       document.getElementById("userName").innerText = name;
-    } else alert(data.message || "Update failed");
+    } else
+    showToast(data.message || "Update failed", "error");
   } catch (err) {
-    alert("Error: " + err.message);
+    showToast("Error: " + err.message, "error");
   }
 }
 
@@ -154,11 +188,11 @@ async function markTimeIn() {
     const res = await fetch(`${API_URL}/timein`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     if (res.ok) {
-      alert(data.message);
+      showToast(data.message, "success");
       loadTimeIn();
-    } else alert(data.message || "Failed");
+    } else showToast(data.message || "Failed", "error");
   } catch (err) {
-    alert("Error: " + err.message);
+    showToast("Error: " + err.message, "error");
   }
 }
 async function loadTimeIn() {
@@ -180,10 +214,10 @@ async function markTimeOut() {
     const res = await fetch(`${API_URL}/timeout`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     if (res.ok) {
-      alert(data.message);
+      showToast(data.message, "success");
       loadTimeOut();
-    } else alert(data.message || "Failed");
-  } catch (err) { alert("Error: " + err.message); }
+    } else  showToast(data.message || "Failed", "error");
+  } catch (err) { showToast("Error: " + err.message, "error"); }
 }
 async function loadTimeOut() {
   try {
@@ -212,10 +246,10 @@ async function submitLeave() {
     });
     const data = await res.json();
     if (res.ok) {
-      alert(data.message);
+      showToast(data.message, "success");
       loadLeaves();
-    } else alert(data.message || "Failed");
-  } catch (err) { alert("Error: " + err.message); }
+    } else  showToast(data.message || "Failed", "error");
+  } catch (err) { showToast("Error: " + err.message, "error"); }
 }
 async function loadLeaves() {
   try {
@@ -296,14 +330,14 @@ async function addEmployee() {
     });
     const data = await res.json();
     if (res.ok) {
-      alert("Employee added");
+      showToast("Employee added", "success");
       document.getElementById("empName").value = "";
       document.getElementById("empEmail").value = "";
       document.getElementById("empPassword").value = "";
       document.getElementById("empDepartment").value = "";
       loadEmployees();
-    } else alert(data.message || "Error adding employee");
-  } catch (err) { alert("Error: "+err.message); }
+    } else  showToast(data.message || "Error adding employee", "error");
+  } catch (err) { showToast("Error: "+err.message, "error"); }
 }
 
 function editEmployee(id, name, email, department) {
@@ -328,11 +362,11 @@ async function updateEmployee() {
     });
     const data = await res.json();
     if (res.ok) {
-      alert("Employee updated");
+      showToast("Employee updated", "success");
       document.getElementById("editEmployeeForm").style.display = "none";
       loadEmployees();
-    } else alert(data.message || "Update failed");
-  } catch (err) { alert("Error: "+err.message); }
+    } else  showToast(data.message || "Update failed", "error");
+  } catch (err) { showToast("Error: "+err.message, "error"); }
 }
 
 // small helpers to avoid breaking HTML when injecting values
@@ -370,9 +404,9 @@ async function generatePayslip() {
       body: JSON.stringify({ userId: empId, month, basicSalary, overtimePay, allowances, sss, philhealth, pagibig, tax })
     });
     const data = await res.json();
-    if (res.ok) alert("Payslip generated!");
-    else alert(data.message || "Error");
-  } catch (err) { alert("Error: " + err.message); }
+    if (res.ok)  showToast("Payslip generated!", "success");
+    else  showToast(data.message || "Error", "error");
+  } catch (err) { showToast("Error: " + err.message, "error"); }
 }
 
 // --- Employee View Payslips ---
@@ -439,6 +473,25 @@ function showDashboard() {
   loadProfile(); loadTimeIn(); loadTimeOut(); loadLeaves();
   showSection("profileSection");
 }
+
+// ...existing code...
+
+// --- Toast Notification ---
+function showToast(message, type = "info") {
+  let toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.innerText = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("show");
+  }, 10);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => document.body.removeChild(toast), 400);
+  }, 2500);
+}
+
+// ...existing code...
 
 // --- Show dashboard updates ---
 function showDashboard() {

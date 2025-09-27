@@ -5,6 +5,153 @@ body {
   margin: 0;
 }
 
+/* --- Portal Auth Custom --- */
+.portal-auth {
+  max-width: 420px;
+  margin: 64px auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(120, 72, 24, 0.10), 0 2px 8px rgba(120, 72, 24, 0.06);
+  border: 1px solid #e7d9c4;
+  padding: 0;
+  overflow: hidden;
+}
+
+.portal-header {
+  background: linear-gradient(90deg, #bfa074 0%, #f8f5f2 100%);
+  padding: 32px 24px 18px 24px;
+  text-align: center;
+}
+
+.portal-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(120,72,24,0.10);
+}
+
+.portal-title {
+  font-size: 1.6rem;
+  color: #7c5c36;
+  font-weight: 800;
+  margin-bottom: 4px;
+  letter-spacing: 1.2px;
+}
+
+.portal-desc {
+  color: #a4845c;
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+
+.portal-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  background: #f8f5f2;
+  border-bottom: 1px solid #e7d9c4;
+}
+
+.portal-tabs button {
+  flex: 1;
+  padding: 14px 0;
+  background: none;
+  border: none;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #7c5c36;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.portal-tabs button.active,
+.portal-tabs button:focus {
+  background: #fff8f0;
+  color: #bfa074;
+  border-bottom: 3px solid #bfa074;
+}
+
+.portal-form {
+  padding: 24px 32px 12px 32px;
+  background: #fff;
+}
+
+.portal-form label {
+  display: block;
+  margin-bottom: 6px;
+  color: #bfa074;
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.portal-form input,
+.portal-form select {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 7px;
+  border: 1.5px solid #e7d9c4;
+  font-size: 1rem;
+  background: #fdfaf7;
+  color: #7c5c36;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.portal-form input:focus,
+.portal-form select:focus {
+  border: 1.5px solid #bfa074;
+  background: #fff;
+  box-shadow: 0 0 0 2px #e7d9c4;
+}
+
+.portal-form button {
+  width: 100%;
+  background: linear-gradient(90deg, #bfa074 0%, #e7d9c4 100%);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(120, 72, 24, 0.07);
+  border-radius: 7px;
+  padding: 13px 0;
+  margin-top: 10px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.portal-form button:hover {
+  background: linear-gradient(90deg, #a4845c 0%, #bfa074 100%);
+  box-shadow: 0 4px 16px rgba(120, 72, 24, 0.12);
+}
+
+.portal-footer {
+  background: #f8f5f2;
+  padding: 16px 0 8px 0;
+  text-align: center;
+  border-top: 1px solid #e7d9c4;
+}
+
+.portal-footer p {
+  color: #7c5c36;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.portal-footer a {
+  color: #bfa074;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.portal-footer a:hover {
+  color: #7c5c36;
+}
+
 /* --- Auth Container --- */
 .container {
   width: 380px;
@@ -264,6 +411,40 @@ button:hover {
   color: #7c5c36;
   font-size: 1rem;
 }
+
+/* ...existing code... */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  background: #fff8f0;
+  color: #7c5c36;
+  padding: 14px 32px;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(120,72,24,0.12);
+  font-size: 1.08rem;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  pointer-events: auto;
+}
+.toast-success {
+  border-left: 6px solid #bfa074;
+}
+.toast-error {
+  border-left: 6px solid #c49a6c;
+}
+.toast-info {
+  border-left: 6px solid #7c5c36;
+}
+/* ...existing code... */
 
 /* --- Responsive --- */
 @media (max-width: 900px) {

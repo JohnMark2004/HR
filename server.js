@@ -87,14 +87,26 @@ function authenticate(req, res, next) {
 // --- Auth Routes ---
 app.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-    if (await User.findOne({ email })) return res.status(400).json({ message: "Email exists" });
+    const { name, email, password, role, accessCode } = req.body;
+
+    // ✅ Block fake HR signups
+    if (role === "HR" && accessCode !== "12345") {
+      return res.status(403).json({ message: "Invalid HR access code" });
+    }
+
+    if (await User.findOne({ email })) {
+      return res.status(400).json({ message: "Email exists" });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
     const user = new User({ name, email, password: hashed, role });
     await user.save();
     res.json({ message: "Signup successful" });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
+
 
 app.post("/login", async (req, res) => {
   try {
