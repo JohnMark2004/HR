@@ -250,10 +250,9 @@ app.get("/reports/attendance", authenticate, async (req, res) => {
 });
 
 // --- Frontend Catch-all ---
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => { // [THIS IS THE FIXED LINE]
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
 
 // --- Start Server ---
 const PORT = process.env.PORT || 10000;
