@@ -249,11 +249,9 @@ app.get("/reports/attendance", authenticate, async (req, res) => {
   res.json({ timeins: await TimeIn.find().sort({ timestamp: -1 }), timeouts: await TimeOut.find().sort({ timestamp: -1 }) });
 });
 
-// --- Frontend Catch-all ---
-app.get('/*', (req, res) => { // [THIS IS THE FIXED LINE]
+app.get('/(.*)', (req, res) => { 
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
 // --- Start Server ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
