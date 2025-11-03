@@ -217,7 +217,10 @@ app.post("/payslips", authenticate, async (req, res) => {
 
 // --- API HR User Management ---
 app.get("/employees", authenticate, async (req, res) => {
-  if (req.user.role !== "HR") return res.status(De3).json({ message: "Denied" });
+  // 
+  // ⚠️ BUG FIX 1: Changed 'De3' to '403'
+  //
+  if (req.user.role !== "HR") return res.status(403).json({ message: "Denied" });
   // Now returns both Employees and other HR users, but not the user themselves
   res.json(await User.find({ _id: { $ne: req.user.id } }).select("-password"));
 });
@@ -249,9 +252,14 @@ app.get("/reports/attendance", authenticate, async (req, res) => {
   res.json({ timeins: await TimeIn.find().sort({ timestamp: -1 }), timeouts: await TimeOut.find().sort({ timestamp: -1 }) });
 });
 
-app.get('/(.*)', (req, res) => { 
+// --- Frontend Catch-all ---
+//
+// ⚠️ BUG FIX 2: Changed string '/(.*)' to RegExp /.*/ to fix deployment crash
+//
+app.get(/.*/, (req, res) => { 
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
 // --- Start Server ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
