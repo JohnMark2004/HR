@@ -3,11 +3,8 @@ const API_URL = "https://hr-1-ck3i.onrender.com";
 
 // ---------- Auth ----------
 
-function toggleSignupHrAccess() {
-  const role = document.getElementById("signupRole").value;
-  document.getElementById("signupHrAccessDiv").style.display =
-    role === "HR" ? "block" : "none";
-}
+// (toggleSignupHrAccess is no longer needed)
+// function toggleSignupHrAccess() { ... }
 
 
 async function signup() {
@@ -15,17 +12,9 @@ async function signup() {
   const email = document.getElementById("signupEmail")?.value.trim() || "";
   const password = document.getElementById("signupPassword")?.value || "";
   const confirmPassword = document.getElementById("signupConfirmPassword")?.value || "";
-  const role = document.getElementById("signupRole")?.value || "";
-  const accessCodeInput = document.getElementById("signupHrAccessCode");
-  const accessCode = accessCodeInput ? accessCodeInput.value.trim() : "";
 
-  if (role === "HR") {
-    if (accessCode !== "12345") {
-      showToast("Invalid HR Access Code.", "error");
-      return;
-    }
-  }
-
+  // Role and AccessCode logic removed
+  
   if (!name || !email || !password || !confirmPassword) {
     showToast("Please fill out all required fields.", "error");
     return;
@@ -40,7 +29,8 @@ async function signup() {
     const res = await fetch(`${API_URL}/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role, accessCode })
+      // Only send name, email, password. Role is set by server.
+      body: JSON.stringify({ name, email, password }) 
     });
 
     const data = await res.json();
@@ -94,7 +84,23 @@ function logout() {
 }
 
 // ---------- UI helpers ----------
-// ...existing code...
+
+/**
+ * Toggles password visibility for an input field.
+ * @param {string} inputId The ID of the password input field.
+ * @param {HTMLElement} icon The <img> element that was clicked.
+ */
+function togglePassword(inputId, icon) {
+  const input = document.getElementById(inputId);
+  if (input.type === "password") {
+    input.type = "text";
+    icon.src = "/img/eye-password-show-svgrepo-com.svg";
+  } else {
+    input.type = "password";
+    icon.src = "/img/eye-password-hide-svgrepo-com.svg";
+  }
+}
+
 function showSignup() {
   document.getElementById("signupForm").style.display = "block";
   document.getElementById("loginForm").style.display = "none";
@@ -109,35 +115,8 @@ function showLogin() {
   document.getElementById("signupTab").classList.remove("active");
   document.getElementById("toggleText").innerHTML = 'Don\'t have an account? <a href="#" onclick="showSignup()">Signup</a>';
 }
-// ...existing code...
 
 // ---------- Dashboard ----------
-function showDashboard() {
-  const user = JSON.parse(localStorage.getItem("currentUser") || "null");
-  if (!user) return showLogin();
-
-  document.getElementById("authBox").style.display = "none";
-  document.getElementById("dashboard").style.display = "flex";
-
-  document.getElementById("userName").innerText = user.name;
-  document.getElementById("userRole").innerText = user.role;
-
-  // show HR menu if HR
-  if (user.role === "HR") {
-    document.getElementById("hrMenu").style.display = "block";
-  } else {
-    document.getElementById("hrMenu").style.display = "none";
-  }
-
-  loadProfile();
-  loadTimeIn();
-  loadTimeOut();
-  loadLeaves();
-  if (user.role === "HR") loadEmployees();
-
-  showSection("profileSection");
-}
-
 function showSection(id) {
   document.querySelectorAll(".main-content .section").forEach(s => s.classList.add("hidden"));
   const el = document.getElementById(id);
@@ -280,20 +259,6 @@ async function loadLeaves() {
   } catch (err) { console.error(err); }
 }
 
-// ---------- Payslips ----------
-async function viewPayslips() {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API_URL}/payslips`, { headers: { Authorization: `Bearer ${token}` } });
-    const slips = await res.json();
-    const html = (slips && slips.length)
-      ? `<table class="records-table"><thead><tr><th>#</th><th>Month</th><th>Basic</th><th>Deductions</th><th>Net</th><th>Generated</th></tr></thead><tbody>${slips
-          .map((s,i)=>`<tr><td>${i+1}</td><td>${s.month}</td><td>₱${(s.basicSalary||0).toLocaleString()}</td><td>₱${(s.deductions||0).toLocaleString()}</td><td>₱${(s.netSalary||0).toLocaleString()}</td><td>${new Date(s.generatedAt).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</td></tr>`).join("")}</tbody></table>`
-      : "<p>No payslips yet.</p>";
-    document.getElementById("payslipContainer").innerHTML = html;
-  } catch (err) { console.error(err); }
-}
-
 // ---------- HR employee management ----------
 async function loadEmployees() {
   try {
@@ -329,21 +294,24 @@ async function addEmployee() {
     const email = document.getElementById("empEmail").value.trim();
     const password = document.getElementById("empPassword").value;
     const department = document.getElementById("empDepartment").value.trim();
+    const role = document.getElementById("empRole").value; // Get role from admin form
     const token = localStorage.getItem("token");
     const res = await fetch(`${API_URL}/employees`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name, email, password, department })
+      // Send role to server
+      body: JSON.stringify({ name, email, password, department, role }) 
     });
     const data = await res.json();
     if (res.ok) {
-      showToast("Employee added", "success");
+      showToast("User added", "success");
       document.getElementById("empName").value = "";
       document.getElementById("empEmail").value = "";
       document.getElementById("empPassword").value = "";
       document.getElementById("empDepartment").value = "";
+      document.getElementById("empRole").value = "Employee"; // Reset dropdown
       loadEmployees();
-    } else  showToast(data.message || "Error adding employee", "error");
+    } else  showToast(data.message || "Error adding user", "error");
   } catch (err) { showToast("Error: "+err.message, "error"); }
 }
 
@@ -361,6 +329,7 @@ async function updateEmployee() {
     const name = document.getElementById("editEmpName").value.trim();
     const email = document.getElementById("editEmpEmail").value.trim();
     const department = document.getElementById("editEmpDepartment").value.trim();
+    // Note: Role editing is not implemented, only name/email/dept
     const token = localStorage.getItem("token");
     const res = await fetch(`${API_URL}/employees/${id}`, {
       method: "PUT",
@@ -424,20 +393,20 @@ async function viewPayslips() {
     const slips = await res.json();
     document.getElementById("payslipContainer").innerHTML = slips.length
       ? slips.map(s => `
-        <div class="payslip-card">
-          <h4>${s.month} Payslip</h4>
-          <table>
-            <tr><td>Basic Salary</td><td>₱${s.basicSalary.toLocaleString()}</td></tr>
-            <tr><td>Overtime Pay</td><td>₱${s.overtimePay.toLocaleString()}</td></tr>
-            <tr><td>Allowances</td><td>₱${s.allowances.toLocaleString()}</td></tr>
-            <tr><td colspan="2"><b>Deductions</b></td></tr>
-            <tr><td>SSS</td><td>₱${s.sss.toLocaleString()}</td></tr>
-            <tr><td>PhilHealth</td><td>₱${s.philhealth.toLocaleString()}</td></tr>
-            <tr><td>Pag-IBIG</td><td>₱${s.pagibig.toLocaleString()}</td></tr>
-            <tr><td>Tax</td><td>₱${s.tax.toLocaleString()}</td></tr>
-            <tr><td><b>Net Pay</b></td><td><b>₱${s.netSalary.toLocaleString()}</b></td></tr>
+        <div class="payslip-card" style="background:#fff; border:1px solid #e7d9c4; border-radius:8px; padding:12px 16px; margin-bottom:12px; max-width: 350px;">
+          <h4 style="margin-bottom:10px; color:#7c5c36;">${s.month} Payslip</h4>
+          <table style="width:100%; font-size:0.95rem;">
+            <tr><td>Basic Salary</td><td style="text-align:right;">₱${(s.basicSalary||0).toLocaleString()}</td></tr>
+            <tr><td>Overtime Pay</td><td style="text-align:right;">₱${(s.overtimePay||0).toLocaleString()}</td></tr>
+            <tr><td>Allowances</td><td style="text-align:right;">₱${(s.allowances||0).toLocaleString()}</td></tr>
+            <tr><td colspan="2" style="padding-top:8px;"><b>Deductions</b></td></tr>
+            <tr><td style="padding-left:10px;">SSS</td><td style="text-align:right;">- ₱${(s.sss||0).toLocaleString()}</td></tr>
+            <tr><td style="padding-left:10px;">PhilHealth</td><td style="text-align:right;">- ₱${(s.philhealth||0).toLocaleString()}</td></tr>
+            <tr><td style="padding-left:10px;">Pag-IBIG</td><td style="text-align:right;">- ₱${(s.pagibig||0).toLocaleString()}</td></tr>
+            <tr><td style="padding-left:10px;">Tax</td><td style="text-align:right;">- ₱${(s.tax||0).toLocaleString()}</td></tr>
+            <tr style="border-top:1px solid #e7d9c4; font-size:1.05rem; font-weight:bold;"><td style="padding-top:8px;"><b>Net Pay</b></td><td style="text-align:right; padding-top:8px;"><b>₱${(s.netSalary||0).toLocaleString()}</b></td></tr>
           </table>
-          <p><small>Generated: ${new Date(s.generatedAt).toLocaleString("en-PH",{timeZone:"Asia/Manila"})}</small></p>
+          <p style="font-size:0.8rem; margin-top:10px; color:#a4845c;"><small>Generated: ${new Date(s.generatedAt).toLocaleString("en-PH",{timeZone:"Asia/Manila"})}</small></p>
         </div>`).join("")
       : "<p>No payslips yet.</p>";
   } catch (err) { console.error(err); }
@@ -458,49 +427,6 @@ async function viewReports() {
 }
 
 // --- Dashboard Role Handling ---
-function showDashboard() {
-  const user = JSON.parse(localStorage.getItem("currentUser")||"null");
-  if (!user) return showLogin();
-  document.getElementById("authBox").style.display="none";
-  document.getElementById("dashboard").style.display="flex";
-  document.getElementById("userName").innerText=user.name;
-  document.getElementById("userRole").innerText=user.role;
-  if (user.role==="HR") {
-    document.getElementById("leaveMenu").style.display="none";
-    document.getElementById("hrMenu").style.display="block";
-    document.getElementById("payrollMenu").style.display="block";
-    document.getElementById("reportsMenu").style.display="block";
-    loadEmployees();
-  } else {
-    document.getElementById("leaveMenu").style.display="block";
-    document.getElementById("hrMenu").style.display="none";
-    document.getElementById("payrollMenu").style.display="none";
-    document.getElementById("reportsMenu").style.display="none";
-  }
-  loadProfile(); loadTimeIn(); loadTimeOut(); loadLeaves();
-  showSection("profileSection");
-}
-
-// ...existing code...
-
-// --- Toast Notification ---
-function showToast(message, type = "info") {
-  let toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  toast.innerText = message;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add("show");
-  }, 10);
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => document.body.removeChild(toast), 400);
-  }, 2500);
-}
-
-// ...existing code...
-
-// --- Show dashboard updates ---
 function showDashboard() {
   const user = JSON.parse(localStorage.getItem("currentUser") || "null");
   if (!user) return showLogin();
@@ -529,4 +455,19 @@ function showDashboard() {
   loadTimeOut();
   loadLeaves();
   showSection("profileSection");
+}
+
+// --- Toast Notification ---
+function showToast(message, type = "info") {
+  let toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.innerText = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("show");
+  }, 10);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => document.body.removeChild(toast), 400);
+  }, 2500);
 }

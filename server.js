@@ -6,6 +6,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const moment = require("moment-timezone");
+const path = require('path'); 
 
 const app = express();
 app.use(express.json());
@@ -13,11 +14,8 @@ app.use(cors());
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ Mongo error:", err));
+// --- Serve frontend build ---
+app.use(express.static(path.join(__dirname, 'public')));
 
 // --- Schemas ---
 const UserSchema = new mongoose.Schema({
@@ -72,6 +70,44 @@ const PayslipSchema = new mongoose.Schema({
 });
 const Payslip = mongoose.model("Payslip", PayslipSchema);
 
+// --- Static Admin Account Creation ---
+async function createStaticAdmin() {
+  try {
+    const adminEmail = "admin@portal.com";
+    const adminPass = "adminpass";
+    const adminName = "Admin User";
+
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    if (existingAdmin) {
+      // console.log("✅ Static HR Admin account already exists.");
+      return;
+    }
+
+    const hashed = await bcrypt.hash(adminPass, 10);
+    const admin = new User({
+      name: adminName,
+      email: adminEmail,
+      password: hashed,
+      role: "HR",
+      department: "Administration"
+    });
+    await admin.save();
+    console.log("✅ Static HR Admin account created.");
+  } catch (err) {
+    console.error("❌ Error creating static admin:", err.message);
+  }
+}
+
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("✅ MongoDB connected");
+    createStaticAdmin(); // Create the admin account on connection
+  })
+  .catch(err => console.error("❌ Mongo error:", err));
+
+
 // --- Auth Middleware ---
 function authenticate(req, res, next) {
   const token = (req.headers["authorization"] || "").split(" ")[1];
@@ -84,22 +120,21 @@ function authenticate(req, res, next) {
   }
 }
 
-// --- Auth Routes ---
+// --- API Auth Routes ---
+
+// Public Signup - Always creates "Employee"
 app.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, role, accessCode } = req.body;
-
-    // ✅ Block fake HR signups
-    if (role === "HR" && accessCode !== "12345") {
-      return res.status(403).json({ message: "Invalid HR access code" });
-    }
+    // Role and accessCode removed.
+    const { name, email, password } = req.body;
 
     if (await User.findOne({ email })) {
       return res.status(400).json({ message: "Email exists" });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashed, role });
+    // Role is hard-coded to "Employee" for security.
+    const user = new User({ name, email, password: hashed, role: "Employee" }); 
     await user.save();
     res.json({ message: "Signup successful" });
   } catch (err) {
@@ -120,7 +155,7 @@ app.post("/login", async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// --- Profile ---
+// --- API Profile ---
 app.get("/profile", authenticate, async (req, res) => {
   const u = await User.findById(req.user.id).select("-password");
   res.json(u);
@@ -130,7 +165,7 @@ app.put("/profile", authenticate, async (req, res) => {
   res.json({ message: "Profile updated" });
 });
 
-// --- Time In / Out ---
+// --- API Time In / Out ---
 app.post("/timein", authenticate, async (req, res) => {
   const u = await User.findById(req.user.id);
   const rec = new TimeIn({ userId: u._id, name: u.name, email: u.email });
@@ -151,7 +186,7 @@ app.get("/timeout", authenticate, async (req, res) => {
   res.json(await TimeOut.find({ userId: req.user.id }).sort({ timestamp: -1 }));
 });
 
-// --- Leave (Employee only) ---
+// --- API Leave (Employee only) ---
 app.post("/leave", authenticate, async (req, res) => {
   if (req.user.role === "HR") return res.status(403).json({ message: "HR cannot file leave" });
   const u = await User.findById(req.user.id);
@@ -164,7 +199,7 @@ app.get("/leave", authenticate, async (req, res) => {
   res.json(await Leave.find({ userId: req.user.id }).sort({ createdAt: -1 }));
 });
 
-// --- Payslips ---
+// --- API Payslips ---
 app.get("/payslips", authenticate, async (req, res) => {
   res.json(await Payslip.find({ userId: req.user.id }).sort({ generatedAt: -1 }));
 });
@@ -180,46 +215,48 @@ app.post("/payslips", authenticate, async (req, res) => {
   res.json({ message: "Payslip created", slip });
 });
 
-// --- HR Employee Management ---
+// --- API HR User Management ---
 app.get("/employees", authenticate, async (req, res) => {
-  if (req.user.role !== "HR") return res.status(403).json({ message: "Denied" });
-  res.json(await User.find({ role: "Employee" }).select("-password"));
+  if (req.user.role !== "HR") return res.status(De3).json({ message: "Denied" });
+  // Now returns both Employees and other HR users, but not the user themselves
+  res.json(await User.find({ _id: { $ne: req.user.id } }).select("-password"));
 });
+
+// Admin creates a new user (Employee or HR)
 app.post("/employees", authenticate, async (req, res) => {
   if (req.user.role !== "HR") return res.status(403).json({ message: "Denied" });
-  const { name, email, password, department } = req.body;
+  // Role is now sent from the admin's form
+  const { name, email, password, department, role } = req.body; 
+  if (!role || !['Employee', 'HR'].includes(role)) {
+    return res.status(400).json({ message: "Invalid role specified" });
+  }
   const hashed = await bcrypt.hash(password, 10);
-  const emp = new User({ name, email, password: hashed, role: "Employee", department });
+  const emp = new User({ name, email, password: hashed, role, department });
   await emp.save();
-  res.json({ message: "Employee added", emp });
+  res.json({ message: "User added", emp });
 });
+
 app.put("/employees/:id", authenticate, async (req, res) => {
   if (req.user.role !== "HR") return res.status(403).json({ message: "Denied" });
-  const { name, email, department } = req.body;
+  // Admin cannot edit role, only name/email/dept
+  const { name, email, department } = req.body; 
   res.json({ message: "Employee updated", upd: await User.findByIdAndUpdate(req.params.id, { name, email, department }, { new: true }) });
 });
 
-// --- HR Reports ---
+// --- API HR Reports ---
 app.get("/reports/attendance", authenticate, async (req, res) => {
   if (req.user.role !== "HR") return res.status(403).json({ message: "Denied" });
   res.json({ timeins: await TimeIn.find().sort({ timestamp: -1 }), timeouts: await TimeOut.find().sort({ timestamp: -1 }) });
 });
 
-const path = require('path');
-
-// Serve frontend build
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Send index.html for any route not handled by API
-app.get('/', (req, res) => {
+// --- Frontend Catch-all ---
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 
-// Start
+// --- Start Server ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
-

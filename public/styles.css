@@ -152,20 +152,10 @@ body {
   color: #7c5c36;
 }
 
-/* --- Auth Container --- */
-.container {
-  width: 380px;
-  background: #fff;
-  padding: 36px 32px 32px 32px;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(120, 72, 24, 0.10), 0 2px 8px rgba(120, 72, 24, 0.06);
-  border: 1px solid #e7d9c4;
-  margin: 48px auto;
-  margin-top: 64px;
-  transition: box-shadow 0.2s;
-}
+/* --- Removed conflicting .container styles --- */
 
-h2 {
+/* Scoped h2 to portal-form */
+.portal-form h2 {
   text-align: center;
   margin-bottom: 28px;
   color: #7c5c36;
@@ -173,6 +163,7 @@ h2 {
   letter-spacing: 1.2px;
 }
 
+/* Base input/select styles (used by non-portal inputs) */
 input, select {
   width: 100%;
   padding: 13px 16px;
@@ -200,6 +191,7 @@ input::placeholder {
   letter-spacing: 0.2px;
 }
 
+/* Base button styles (used by non-portal buttons) */
 button {
   width: 100%; /* Ensure all buttons take full width of their container */
   background: linear-gradient(90deg, #bfa074 0%, #e7d9c4 100%);
@@ -220,23 +212,7 @@ button:hover {
   box-shadow: 0 4px 16px rgba(120, 72, 24, 0.12);
 }
 
-.toggle, #toggleText {
-  text-align: center;
-  margin-top: 18px;
-  color: #7c5c36;
-}
-
-.toggle a, #toggleText a {
-  color: #bfa074;
-  cursor: pointer;
-  text-decoration: underline;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-.toggle a:hover, #toggleText a:hover {
-  color: #7c5c36;
-}
+/* --- Removed redundant .toggle styles --- */
 
 /* --- Dashboard Layout --- */
 .dashboard {
@@ -472,4 +448,53 @@ button:hover {
     padding: 18px 8px;
     max-width: 100%;
   }
+}
+
+/* --- Password Toggle Icon Styles --- */
+
+/* 1. Wrapper for positioning */
+.password-wrapper {
+  position: relative;
+  /* This ensures it takes up the full width in its container */
+  width: 100%;
+}
+
+/* 2. Style the input inside the wrapper */
+.password-wrapper input {
+  /* Make space for the icon */
+  /* Use !important to override potential inline styles */
+  padding-right: 45px !important; 
+  width: 100%;
+  /* Include padding in the width calculation */
+  box-sizing: border-box; 
+}
+
+/* 3. Style for the icon itself */
+.password-toggle-icon {
+  position: absolute;
+  /* Position inside the input field's visual area */
+  right: 15px; 
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.password-toggle-icon:hover {
+  opacity: 1;
+}
+
+/* 4. Special fix for the HR section inputs */
+/* The inputs in #hrSection have a default margin */
+/* We remove it from the input and apply it to the wrapper */
+#hrSection .password-wrapper {
+  flex: 1; 
+  min-width: 150px; 
+  margin: 10px 0;
+}
+#hrSection .password-wrapper input {
+  margin: 0 !important;
 }

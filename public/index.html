@@ -6,8 +6,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<!-- Auth Portal -->
-<div id="authBox" class="container portal-auth">
+<div id="authBox" class="portal-auth">
   <div class="portal-header">
     <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Perpetual_Help_System_DALTA_seal.png" alt="Portal Logo" class="portal-logo" />
     <h1 class="portal-title">Portal</h1>
@@ -19,17 +18,18 @@
     <button id="signupTab" onclick="showSignup()">Signup</button>
   </div>
 
-  <!-- Login Form -->
   <div id="loginForm" class="portal-form">
     <h2>Login</h2>
     <label for="loginEmail">Email</label>
     <input id="loginEmail" type="email" placeholder="Email" required />
     <label for="loginPassword">Password</label>
-    <input id="loginPassword" type="password" placeholder="Password" required />
+    <div class="password-wrapper">
+      <input id="loginPassword" type="password" placeholder="Password" required />
+      <img src="/img/eye-password-hide-svgrepo-com.svg" class="password-toggle-icon" onclick="togglePassword('loginPassword', this)">
+    </div>
     <button onclick="login()">Login</button>
   </div>
 
-  <!-- Signup Form -->
   <div id="signupForm" class="portal-form" style="display:none;">
     <h2>Signup</h2>
     <label for="signupName">Full Name</label>
@@ -37,21 +37,16 @@
     <label for="signupEmail">Email</label>
     <input id="signupEmail" type="email" placeholder="Enter your email" />
     <label for="signupPassword">Password</label>
-    <input id="signupPassword" type="password" placeholder="Create a password" />
-    <label for="signupConfirmPassword">Confirm Password</label>
-<input id="signupConfirmPassword" type="password" placeholder="Confirm password" />
-    <label for="signupRole">Role</label>
-    <select id="signupRole" onchange="toggleSignupHrAccess()">
-      <option value="Employee">Employee</option>
-      <option value="HR">HR</option>
-    </select>
-
-    <!-- HR Access Code field, shown only if role = HR -->
-    <div id="signupHrAccessDiv" style="display:none;">
-      <label for="signupHrAccessCode">HR Access Code</label>
-      <input id="signupHrAccessCode" type="password" placeholder="HR Access Code" />
+    <div class="password-wrapper">
+      <input id="signupPassword" type="password" placeholder="Create a password" />
+      <img src="/img/eye-password-hide-svgrepo-com.svg" class="password-toggle-icon" onclick="togglePassword('signupPassword', this)">
     </div>
-
+    <label for="signupConfirmPassword">Confirm Password</label>
+    <div class="password-wrapper">
+      <input id="signupConfirmPassword" type="password" placeholder="Confirm password" />
+      <img src="/img/eye-password-hide-svgrepo-com.svg" class="password-toggle-icon" onclick="togglePassword('signupConfirmPassword', this)">
+    </div>
+    
     <button onclick="signup()">Signup</button>
   </div>
 
@@ -59,7 +54,6 @@
     <p id="toggleText">Don't have an account? <a href="#" onclick="showSignup()">Signup</a></p>
   </div>
 </div>
-  <!-- Dashboard -->
   <div id="dashboard" class="dashboard" style="display:none;">
     <aside class="sidebar">
       <h2>HR System</h2>
@@ -78,14 +72,12 @@
     </aside>
 
     <main class="main-content">
-      <!-- Profile -->
       <section id="profileSection" class="section">
         <h3>Profile</h3>
         <input id="profileName" type="text" placeholder="Your name" />
         <button onclick="updateProfile()">Update Profile</button>
       </section>
 
-      <!-- Attendance -->
       <section id="attendanceSection" class="section hidden">
         <h3>Work Time</h3>
         <div style="display:flex; gap:12px; max-width:420px;">
@@ -98,7 +90,6 @@
         <div id="timeOutRecords"></div>
       </section>
 
-      <!-- Leave (employees only) -->
       <section id="leaveSection" class="section hidden">
         <h3>Leave Request</h3>
         <input id="leaveReason" type="text" placeholder="Reason" />
@@ -108,22 +99,29 @@
         <div id="leaveRecords" style="margin-top:12px;"></div>
       </section>
 
-      <!-- Payslips (employee view) -->
       <section id="payslipSection" class="section hidden">
         <h3>Payslips</h3>
         <button onclick="viewPayslips()">View Payslips</button>
         <div id="payslipContainer" style="margin-top:12px;"></div>
       </section>
 
-      <!-- HR: Employees -->
       <section id="hrSection" class="section hidden">
-        <h3>Employee Management</h3>
+        <h3>User Management</h3>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-          <input id="empName" type="text" placeholder="Name" style="flex:1; min-width:200px;" />
-          <input id="empEmail" type="email" placeholder="Email" style="flex:1; min-width:200px;" />
-          <input id="empPassword" type="password" placeholder="Password" style="flex:1; min-width:200px;" />
-          <input id="empDepartment" type="text" placeholder="Department (e.g. Math Dept)" style="flex:1; min-width:200px;" />
-          <button onclick="addEmployee()">Add Employee</button>
+          <input id="empName" type="text" placeholder="Name" style="flex:1; min-width:150px;" />
+          <input id="empEmail" type="email" placeholder="Email" style="flex:1; min-width:150px;" />
+          
+          <div class="password-wrapper" style="flex:1; min-width:150px; margin: 10px 0;">
+            <input id="empPassword" type="password" placeholder="Password" style="width: 100%; margin: 0;" />
+            <img src="/img/eye-password-hide-svgrepo-com.svg" class="password-toggle-icon" onclick="togglePassword('empPassword', this)">
+          </div>
+
+          <input id="empDepartment" type="text" placeholder="Department" style="flex:1; min-width:150px;" />
+          <select id="empRole" style="flex:1; min-width:150px;">
+            <option value="Employee">Employee</option>
+            <option value="HR">HR</option>
+          </select>
+          <button onclick="addEmployee()">Add User</button>
         </div>
 
         <table style="width:100%; border-collapse:collapse; background:#fff;">
@@ -141,7 +139,6 @@
         </div>
       </section>
 
-      <!-- HR: Payroll -->
       <section id="payrollSection" class="section hidden">
         <h3>Payroll Management (Philippines)</h3>
 
@@ -169,7 +166,6 @@
         </div>
       </section>
 
-      <!-- HR: Reports -->
       <section id="reportsSection" class="section hidden">
         <h3>Attendance Reports</h3>
         <button onclick="viewReports()">Refresh Reports</button>
