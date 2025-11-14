@@ -492,24 +492,33 @@ function showDashboard() {
   document.getElementById("userRole").innerText = user.role;
 
   if (user.role === "HR") {
-    document.getElementById("leaveMenu").style.display = "none";
+    // 1. Hide Employee menu
+    document.getElementById("leaveMenu").style.display = "none"; 
+    
+    // 2. SHOW HR MENUS
+    document.getElementById("hrLeaveMenu").style.display = "block"; // <-- THIS WAS THE MISSING LINE
     document.getElementById("hrMenu").style.display = "block";
     document.getElementById("payrollMenu").style.display = "block";
     document.getElementById("reportsMenu").style.display = "block";
+    
+    // 3. LOAD HR DATA
     loadEmployees();
     loadHRLeaves();
+
   } else {
-document.getElementById("leaveMenu").style.display = "block"; // Show employee leave
+    // Employee View
+    document.getElementById("leaveMenu").style.display = "block"; 
     document.getElementById("hrLeaveMenu").style.display = "none";
     document.getElementById("hrMenu").style.display = "none";
     document.getElementById("payrollMenu").style.display = "none";
     document.getElementById("reportsMenu").style.display = "none";
   }
 
+  // Load common data
   loadProfile();
   loadTimeIn();
   loadTimeOut();
-  loadLeaves();
+  loadLeaves(); // This is for the employee view, it's fine to leave
   showSection("profileSection");
 }
 
