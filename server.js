@@ -199,6 +199,35 @@ app.get("/leave", authenticate, async (req, res) => {
   res.json(await Leave.find({ userId: req.user.id }).sort({ createdAt: -1 }));
 });
 
+// HR: Get all leave requests
+app.get("/admin/leaves", authenticate, async (req, res) => {
+  if (req.user.role !== "HR") return res.status(403).json({ message: "Denied" });
+  // Find all leaves, sort by newest first
+  res.json(await Leave.find().sort({ createdAt: -1 }));
+});
+
+// HR: Update leave status (Approve/Reject)
+app.put("/admin/leaves/:id", authenticate, async (req, res) => {
+  if (req.user.role !== "HR") return res.status(403).json({ message: "Denied" });
+
+  const { status } = req.body;
+  if (!status || !["Approved", "Rejected"].includes(status)) {
+    return res.status(400).json({ message: "Invalid status" });
+  }
+
+  try {
+    const updatedLeave = await Leave.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true } // Return the updated document
+    );
+    if (!updatedLeave) return res.status(404).json({ message: "Leave not found" });
+    res.json({ message: `Leave ${status.toLowerCase()}`, leave: updatedLeave });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // --- API Payslips ---
 app.get("/payslips", authenticate, async (req, res) => {
   res.json(await Payslip.find({ userId: req.user.id }).sort({ generatedAt: -1 }));

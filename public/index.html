@@ -65,6 +65,9 @@
         <li id="leaveMenu"><button onclick="showSection('leaveSection')">Leave</button></li>
         <li><button onclick="showSection('payslipSection')">Payslips</button></li>
         <li id="hrMenu" style="display:none;"><button onclick="showSection('hrSection')">Employees</button></li>
+        
+        <li id="hrLeaveMenu" style="display:none;"><button onclick="showSection('hrLeaveSection')">Leave Management</button></li>
+        
         <li id="payrollMenu" style="display:none;"><button onclick="showSection('payrollSection')"> Payroll</button></li>
         <li id="reportsMenu" style="display:none;"><button onclick="showSection('reportsSection')"> Reports</button></li>
         <li><button onclick="logout()">Logout</button></li>
@@ -138,6 +141,24 @@
           <button onclick="updateEmployee()">Save</button>
         </div>
       </section>
+      
+      <section id="hrLeaveSection" class="section hidden">
+        <h3>Leave Management</h3>
+        <p>Review and approve employee leave requests.</p>
+        <table style="width:100%; border-collapse:collapse; background:#fff;">
+          <thead>
+            <tr style="text-align:left;">
+              <th>Employee</th>
+              <th>Reason</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="hrLeaveTableBody"></tbody>
+        </table>
+      </section>
 
       <section id="payrollSection" class="section hidden">
         <h3>Payroll Management (Philippines)</h3>
@@ -160,7 +181,7 @@
           <label>Pag-IBIG</label><input id="payrollPagibig" type="number" value="0" />
           <label>Tax</label><input id="payrollTax" type="number" value="0" />
 
-          <div style="margin-top:12px;">
+          <div style="margin-Ttop:12px;">
             <button onclick="generatePayslip()">Generate Payslip</button>
           </div>
         </div>

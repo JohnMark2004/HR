@@ -259,6 +259,60 @@ async function loadLeaves() {
   } catch (err) { console.error(err); }
 }
 
+// HR: Load all leave requests
+async function loadHRLeaves() {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_URL}/admin/leaves`, { headers: { Authorization: `Bearer ${token}` } });
+    const records = await res.json();
+    
+    const html = (records && records.length)
+      ? records.map(r => `<tr>
+            <td>${r.name} <small>(${r.email})</small></td>
+            <td>${r.reason}</td>
+            <td>${r.from ? new Date(r.from).toLocaleDateString("en-PH") : "-"}</td>
+            <td>${r.to ? new Date(r.to).toLocaleDateString("en-PH") : "-"}</td>
+            <td>${r.status}</td>
+            <td>
+              ${r.status === 'Pending' ? `
+                <button onclick="updateLeaveStatus('${r._id}', 'Approved')" style="max-width:100px; padding: 5px 8px; font-size: 0.9rem; margin: 2px; background: #bfa074;">Approve</button>
+                <button onclick="updateLeaveStatus('${r._id}', 'Rejected')" style="max-width:100px; padding: 5px 8px; font-size: 0.9rem; margin: 2px; background: #a4845c;">Reject</button>
+              ` : `<span>${r.status}</span>`}
+            </td>
+          </tr>`).join("")
+      : "<tr><td colspan='6'>No leave requests found.</td></tr>";
+    
+    const tableBody = document.getElementById("hrLeaveTableBody");
+    if (tableBody) tableBody.innerHTML = html;
+    
+  } catch (err) { console.error(err); }
+}
+
+// HR: Approve or Reject a leave request
+async function updateLeaveStatus(leaveId, newStatus) {
+  if (!confirm(`Are you sure you want to ${newStatus.toLowerCase()} this leave request?`)) {
+    return;
+  }
+  
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_URL}/admin/leaves/${leaveId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(data.message, "success");
+      loadHRLeaves(); // Refresh the list
+    } else {
+      showToast(data.message || "Failed to update", "error");
+    }
+  } catch (err) {
+    showToast("Error: " + err.message, "error");
+  }
+}
+
 // ---------- HR employee management ----------
 async function loadEmployees() {
   try {
@@ -444,7 +498,8 @@ function showDashboard() {
     document.getElementById("reportsMenu").style.display = "block";
     loadEmployees();
   } else {
-    document.getElementById("leaveMenu").style.display = "block";
+document.getElementById("leaveMenu").style.display = "block"; // Show employee leave
+    document.getElementById("hrLeaveMenu").style.display = "none";
     document.getElementById("hrMenu").style.display = "none";
     document.getElementById("payrollMenu").style.display = "none";
     document.getElementById("reportsMenu").style.display = "none";
