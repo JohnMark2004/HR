@@ -497,6 +497,7 @@ function showDashboard() {
     document.getElementById("payrollMenu").style.display = "block";
     document.getElementById("reportsMenu").style.display = "block";
     loadEmployees();
+    loadHRLeaves();
   } else {
 document.getElementById("leaveMenu").style.display = "block"; // Show employee leave
     document.getElementById("hrLeaveMenu").style.display = "none";
